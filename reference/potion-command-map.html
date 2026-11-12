@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Potion lifecycle and commands · Reference</title><link rel="stylesheet" href="../assets/course.css"></head>
+<body><main>
+<nav aria-label="Course"><a href="../lessons/0002-potion-commands.html">Lesson 2</a><a href="template-map.html">Template map &amp; glossary</a><a href="../RESOURCES.md">Sources</a></nav>
+<p class="eyebrow">Reference 02 · Installed game inspected 11 November 2026</p>
+<h1>Follow the operation.</h1>
+<p>Start with similar game content. Inspect its lifecycle override, follow its commands, then adapt the behavior for a BaseLib custom model. <a href="https://github.com/Alchyr/ModTemplate-StS2/wiki/Modding-Basics#learning-how-to-make-things">Author's recommended workflow</a>.</p>
+<h2 id="symbols">Verified symbols</h2>
+<table><thead><tr><th scope="col">Type / member</th><th scope="col">Role or finding</th></tr></thead><tbody>
+<tr><td><code>Models.Potions.EnergyPotion</code></td><td>Combat-only; targets any player; configures <code>EnergyVar(2)</code>; grants energy in <code>OnUse</code>.</td></tr>
+<tr><td><code>Models.Potions.SwiftPotion</code></td><td>Combat-only; targets any player; configures <code>CardsVar(3)</code>; draws in <code>OnUse</code>.</td></tr>
+<tr><td><code>Models.PotionModel.OnUse</code></td><td><code>protected virtual Task OnUse(PlayerChoiceContext choiceContext, Creature? target)</code>. Override for the concrete effect.</td></tr>
+<tr><td><code>Models.PotionModel.OnUseWrapper</code></td><td>Orchestrates consumption, surrounding hooks, and effect execution; calls <code>OnUse</code>.</td></tr>
+<tr><td><code>Commands.PlayerCmd.GainEnergy</code></td><td><code>Task GainEnergy(decimal amount, Player player)</code>. Applies energy-gain modifier hooks before changing combat energy.</td></tr>
+<tr><td><code>Commands.CardPileCmd.Draw</code></td><td><code>Task&lt;IEnumerable&lt;CardModel&gt;&gt; Draw(PlayerChoiceContext choiceContext, decimal count, Player player, bool fromHandDraw = false)</code>. Returns actual drawn cards. The optional flag denotes initial start-of-turn draws.</td></tr>
+<tr><td><code>Entities.Cards.CardPile.MaxCardsInHand</code></td><td>Static property returning 10 in this assembly. Read the property rather than embedding the number.</td></tr>
+<tr><td><code>Entities.Players.PlayerCombatState.Hand.Cards.Count</code></td><td>Current hand count. The draw implementation also accesses the hand via <code>PileType.Hand.GetPile(player)</code>.</td></tr>
+</tbody></table>
+<p class="small">All shortened type names above are under <code>MegaCrit.Sts2.Core</code>. <code>PlayerChoiceContext</code> is in <code>MegaCrit.Sts2.Core.GameActions.Multiplayer</code>.</p>
+<h2 id="reading">Three distinctions worth retaining</h2>
+<dl>
+<dt>Owner versus recipient</dt><dd>The two example potions use <code>target.Player</code> for the recipient. Do not silently substitute <code>Owner</code> when adapting targeted content.</dd>
+<dt>Request versus result</dt><dd>Drawing can return fewer cards than requested. <code>DrawInternal</code> checks prevention, remaining supplies, hand capacity, and combat state; it runs draw hooks and records history.</dd>
+<dt>Configured amount versus literal</dt><dd>The example commands obtain amounts from <code>DynamicVars</code>. Dynamic-variable definitions and display text will be a separate lesson.</dd>
+</dl>
+<p>Computing available slots once and repeatedly drawing until full are different designs if on-draw effects remove or add cards. Keep this decision explicit when implementing the requested potion. Any repeated approach must handle a draw that makes no progress.</p>
+<h2 id="source">Primary source and provenance</h2>
+<p>These API findings come from inspecting types in this locally installed assembly, not from guessed signatures:</p>
+<pre><code>/mnt/c/Program Files (x86)/Steam/steamapps/common/
+Slay the Spire 2/data_sts2_windows_x86_64/sts2.dll
+
+SHA-256:
+0861bfa1df347538d932f22d580e75420f08082792eb914e53b4882764acdbe9</code></pre>
+<p>Inspected with ILSpyCmd 11.2.0.10050 in a temporary directory. Recheck after game updates. The excerpts in lesson 2 omit visual effects and normalize formatting; they are not complete potion implementations.</p>
+<p>Further reading: <a href="https://github.com/Alchyr/ModTemplate-StS2/wiki/Decompiling">Decompiling</a> and <a href="https://alchyr.github.io/BaseLib-Wiki/docs/models/">BaseLib Custom Models</a>. The game examples inherit <code>PotionModel</code>; our mod will use BaseLib's <code>CustomPotionModel</code>.</p>
+<footer>Return to <a href="../lessons/0002-potion-commands.html#practice">the lesson exercise</a> and explain the trace in your own words. Ask the agent whenever the decompiled code is unclear.</footer>
+</main></body></html>

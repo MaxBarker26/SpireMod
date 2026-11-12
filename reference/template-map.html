@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>EnergyPotion · Template reference</title><link rel="stylesheet" href="../assets/course.css"></head>
+<body><main>
+<nav aria-label="Course"><a href="../lessons/0001-template-map.html">Lesson 1</a><a href="../MISSION.md">Mission</a><a href="../RESOURCES.md">Sources</a></nav>
+<p class="eyebrow">Reference 01 · Checked 10 November 2026</p>
+<h1>Your template, at a glance</h1>
+<p>Paths below are relative to the project root. Open C# files in your IDE to navigate their symbols.</p>
+<table>
+<thead><tr><th scope="col">Where</th><th scope="col">What to look for</th></tr></thead>
+<tbody>
+<tr><td><a href="../EnergyPotionCode/MainFile.cs"><code>EnergyPotionCode/MainFile.cs</code></a></td><td><code>ModInitializer</code>, <code>Initialize</code>, logger, and Harmony startup.</td></tr>
+<tr><td><a href="../EnergyPotionCode/Cards/EnergyPotionCard.cs"><code>…/Cards/EnergyPotionCard.cs</code></a></td><td>Abstract card base; centralizes image paths. Add concrete cards beneath it.</td></tr>
+<tr><td><a href="../EnergyPotionCode/Relics/EnergyPotionRelic.cs"><code>…/Relics/EnergyPotionRelic.cs</code></a></td><td>Abstract relic base; image and outline conventions.</td></tr>
+<tr><td><a href="../EnergyPotionCode/Powers/EnergyPotionPower.cs"><code>…/Powers/EnergyPotionPower.cs</code></a></td><td>Abstract power base; image paths and required buff/debuff and stacking choices.</td></tr>
+<tr><td><a href="../EnergyPotionCode/Extensions/StringExtensions.cs"><code>…/Extensions/StringExtensions.cs</code></a></td><td>Builds resource paths and supplies fallback art for existing content categories.</td></tr>
+<tr><td><code>EnergyPotion/localization/eng/</code></td><td>Existing JSON text tables are empty placeholders. No potion table exists yet.</td></tr>
+<tr><td><code>EnergyPotion/images/</code></td><td>Placeholder card, relic, and power art. No potion art folder exists yet.</td></tr>
+<tr><td><a href="../EnergyPotion.json"><code>EnergyPotion.json</code></a></td><td>Manifest: identity, flags, and runtime dependency on BaseLib.</td></tr>
+<tr><td><a href="../EnergyPotion.csproj"><code>EnergyPotion.csproj</code></a></td><td>Game references, NuGet packages, compile/copy targets, and publish/export targets.</td></tr>
+<tr><td><a href="../Directory.Build.props"><code>Directory.Build.props</code></a> / <a href="../Sts2PathDiscovery.props"><code>Sts2PathDiscovery.props</code></a></td><td>Local tool/game paths and default discovery. WSL currently points to Windows game data.</td></tr>
+<tr><td><a href="../project.godot"><code>project.godot</code></a> / <a href="../export_presets.cfg"><code>export_presets.cfg</code></a></td><td>Godot project and resource export settings.</td></tr>
+</tbody></table>
+<h2 id="vocabulary">Working vocabulary</h2>
+<dl>
+<dt>Model</dt><dd>Content definition and behavior, such as a potion or card. Godot nodes handle its visual/input side. <a href="https://alchyr.github.io/BaseLib-Wiki/docs/models/">BaseLib model guide</a>.</dd>
+<dt>Custom model</dt><dd>A BaseLib extension of a game model, with conveniences for modded content. <a href="https://alchyr.github.io/BaseLib-Wiki/docs/models/">Source</a>.</dd>
+<dt>Hook</dt><dd>A lifecycle method where content can respond to game activity. <a href="https://github.com/Alchyr/ModTemplate-StS2/wiki/Modding-Basics#learning-how-to-make-things">Model workflow</a>.</dd>
+<dt>Command</dt><dd>A game operation called by behavior; the guide recommends commands over direct data edits. <a href="https://github.com/Alchyr/ModTemplate-StS2/wiki/Modding-Basics#learning-how-to-make-things">Source</a>.</dd>
+<dt>Manifest / DLL / PCK</dt><dd>Metadata / compiled code / packaged resources. <a href="https://github.com/Alchyr/ModTemplate-StS2/wiki/Modding-Basics#mod-files">Mod file guide</a>.</dd>
+<dt>Patch</dt><dd>A runtime change to an existing method through Harmony. <a href="https://harmony.pardeike.net/v2/articles/intro.html">Harmony introduction</a>.</dd>
+</dl>
+<h2 id="potion">The missing potion branch</h2>
+<p>A future concrete potion will inherit <code>BaseLib.Abstracts.CustomPotionModel</code>, directly or through a small project-specific base. This template has no such branch yet. Read the <a href="https://github.com/Alchyr/BaseLib-StS2/blob/master/Abstracts/CustomPotionModel.cs">framework class</a> for its image and localization extension points.</p>
+<p class="callout">With the current project settings, <code>dotnet build</code> compiles and copies the DLL, manifest, and debug symbols. The optional quick PCK packer is commented out. Resource export is a separate publish/Godot path: a successful build alone does not prove the PCK is current.</p>
+<p class="source">Build observations come from this workspace's <a href="../EnergyPotion.csproj">project file</a>. Packaging background: <a href="https://docs.godotengine.org/en/4.5/tutorials/export/exporting_projects.html#export-menu">Godot export documentation</a>.</p>
+<footer>Use this map during future lessons. Ask the agent whenever a file's responsibility is unclear.</footer>
+</main></body></html>

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>01 · Find where a potion belongs</title><link rel="stylesheet" href="../assets/course.css"><script src="../assets/quiz.js" defer></script></head>
+<body><main>
+<nav aria-label="Course"><a href="../reference/template-map.html">Template map &amp; glossary</a><a href="../MISSION.md">Mission</a><a href="../RESOURCES.md">Sources</a></nav>
+<p class="eyebrow">Lesson 01 · About 7 minutes · No code edits</p>
+<h1>Find where a potion belongs.</h1>
+<p class="lede">Your first win: explain which parts of this project would change to add a potion granting 5 energy and drawing to a full hand.</p>
+<p>You already know C#. Focus on the responsibilities around your class: how it is loaded, how it participates in gameplay, and how it gets its text and art.</p>
+
+<h2 id="layers">1. Know the layers</h2>
+<table><thead><tr><th scope="col">Layer</th><th scope="col">Responsibility</th></tr></thead><tbody>
+<tr><td>Game</td><td>Provides the content model hierarchy and game operations.</td></tr>
+<tr><td>BaseLib</td><td>Extends game models with modding conveniences, including custom asset paths and ID prefixing.</td></tr>
+<tr><td>Your template</td><td>Provides project wiring and reusable bases following your mod's asset conventions.</td></tr>
+<tr><td>Your concrete content</td><td>Defines the specific potion, card, relic, or power you want to add.</td></tr>
+</tbody></table>
+<p class="source">Read: <a href="https://alchyr.github.io/BaseLib-Wiki/docs/models/">BaseLib — Custom Models</a>, especially the introduction and “General Model Info.” Look for the distinction between a model and a Godot node.</p>
+<p>Your existing card hierarchy illustrates the layers:</p>
+<pre><code>CardModel                 // game
+  └─ CustomCardModel      // BaseLib
+      └─ EnergyPotionCard // your abstract asset conventions
+          └─ YourCard     // future concrete behavior</code></pre>
+<p>This is a hierarchy, not a loading sequence. <code>EnergyPotionCard</code> is abstract and implements art paths; it is not a playable card. The relic and power files follow a similar pattern. These observations come directly from your <a href="../EnergyPotionCode/Cards/EnergyPotionCard.cs">card</a>, <a href="../EnergyPotionCode/Relics/EnergyPotionRelic.cs">relic</a>, and <a href="../EnergyPotionCode/Powers/EnergyPotionPower.cs">power</a> files.</p>
+
+<h2 id="startup">2. Separate startup from gameplay</h2>
+<p>Open <a href="../EnergyPotionCode/MainFile.cs"><code>MainFile.cs</code></a>. Its <code>[ModInitializer(nameof(Initialize))]</code> identifies the startup method. Inside it, <code>PatchAll(assembly)</code> applies Harmony patches declared in this assembly. <a href="https://harmony.pardeike.net/v2/articles/intro.html#hello-world-example">Harmony's startup example</a> shows this pattern.</p>
+<p>The potion's repeatable effect belongs in its model's activation behavior. We will inspect the installed game to find that exact override and the commands it should call. Startup runs to initialize the mod; it is not the potion-drinking event.</p>
+<p class="source">Primary workflow: <a href="https://github.com/Alchyr/ModTemplate-StS2/wiki/Modding-Basics#learning-how-to-make-things">Modding Basics — Learning how to make things</a>. Read those few paragraphs; look for “models,” lifecycle actions, commands, and adapting comparable game content.</p>
+<p>BaseLib offers <a href="https://github.com/Alchyr/BaseLib-StS2/blob/master/Abstracts/CustomPotionModel.cs"><code>CustomPotionModel</code></a>. Your template currently has no concrete potion and no potion-specific art helper. That is the branch we will add later.</p>
+
+<h2 id="outputs">3. Locate code, text, and art</h2>
+<p>The deployed mod uses separate outputs:</p>
+<pre><code>EnergyPotion.json  ← identity, dependencies, flags
+EnergyPotion.dll   ← compiled C# behavior
+EnergyPotion.pck   ← packaged text and assets</code></pre>
+<p class="source">Source: <a href="https://github.com/Alchyr/ModTemplate-StS2/wiki/Modding-Basics#mod-files">Modding Basics — Mod files</a>.</p>
+<p>In this workspace, inspect <a href="../EnergyPotion.csproj"><code>CopyToModsFolderOnBuild</code></a> and <code>GodotPublish</code>. A normal build copies code, metadata, and debug symbols; the Godot export path packages resources. The quick PCK package is commented out. A code change and an image change therefore need different output checks.</p>
+<p>Also distinguish the BaseLib package reference in the project from the BaseLib dependency in the manifest: the former supplies a compile-time reference; the latter declares the mod required at runtime. See <a href="https://www.nuget.org/packages/Alchyr.Sts2.BaseLib/3.4.7">BaseLib's package instructions</a>.</p>
+
+<h2 id="practice">4. Recall before looking back</h2>
+<p>Close the source tabs for these three questions. Each question gives feedback immediately; this page does not send or save your answers.</p>
+<fieldset data-quiz data-answer="model" data-explanation="The effect belongs to the potion's activation behavior. We will verify the exact hook next." data-hint="Think about what happens each time a player drinks this potion.">
+<legend>Where should the energy-granting behavior live?</legend>
+<label><input type="radio" name="behavior" value="initializer"> Mod initializer</label>
+<label><input type="radio" name="behavior" value="model"> Potion model</label>
+<label><input type="radio" name="behavior" value="preset"> Export preset</label>
+<button type="button">Check answer</button><p class="feedback" role="status" aria-live="polite"></p>
+</fieldset>
+<fieldset data-quiz data-answer="pck" data-explanation="The PCK packages resources; the DLL holds compiled code and the JSON is the manifest." data-hint="Which output is produced by the resource export path?">
+<legend>Which output carries packaged localization and art?</legend>
+<label><input type="radio" name="output" value="json"> EnergyPotion.json</label>
+<label><input type="radio" name="output" value="dll"> EnergyPotion.dll</label>
+<label><input type="radio" name="output" value="pck"> EnergyPotion.pck</label>
+<button type="button">Check answer</button><p class="feedback" role="status" aria-live="polite"></p>
+</fieldset>
+<fieldset data-quiz data-answer="paths" data-explanation="The existing abstract bases primarily centralize image conventions, with power metadata requirements too." data-hint="Recall the properties overridden by EnergyPotionCard and EnergyPotionRelic.">
+<legend>What do this template's abstract content bases primarily centralize?</legend>
+<label><input type="radio" name="base" value="paths"> Asset paths</label>
+<label><input type="radio" name="base" value="effects"> Potion effects</label>
+<label><input type="radio" name="base" value="state"> Combat state</label>
+<button type="button">Check answer</button><p class="feedback" role="status" aria-live="polite"></p>
+</fieldset>
+<noscript><p>JavaScript is disabled. Answer the questions in chat for feedback.</p></noscript>
+
+<h2 id="handoff">5. Bring back one explanation</h2>
+<p>Reopen the project and locate the relevant files yourself. Reply in chat with:</p>
+<ol><li>The file and symbol that initialize the mod.</li><li>The current card inheritance chain, from the game's model down to your template's base.</li><li>Where you would add the potion's behavior, its text, and its art—and which packaged output each would affect.</li></ol>
+<p>It is fine to mark an answer uncertain. Ask the agent any follow-up questions about the lesson; we will clarify this map before implementing the potion.</p>
+<footer><a href="../reference/template-map.html">Keep the compact template map</a> for later. After feedback, continue to <a href="0002-potion-commands.html">lesson 2: trace a potion's effect</a>.</footer>
+</main></body></html>

@@ -1,0 +1,31 @@
+:root { color-scheme: light; --ink: #23332f; --muted: #53645e; --accent: #17674f; --line: #d4ded7; --paper: #fffefa; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #eef2ed; color: var(--ink); font: 18px/1.65 Georgia, serif; }
+main { max-width: 960px; margin: 38px auto; padding: 48px 64px; background: var(--paper); border-top: 5px solid var(--accent); }
+h1, h2, h3, .eyebrow, nav, button, legend { font-family: system-ui, sans-serif; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.13; letter-spacing: -.045em; margin: .3em 0 .5em; }
+h2 { font-size: 1.35rem; margin-top: 2em; line-height: 1.3; }
+h3 { font-size: 1rem; }
+.eyebrow { font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.lede { font-size: 1.2rem; color: var(--muted); }
+a { color: var(--accent); text-underline-offset: .18em; }
+nav { font-size: .85rem; display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
+code, pre { font-family: ui-monospace, monospace; font-size: .83em; }
+code { overflow-wrap: anywhere; }
+pre { padding: 1.2rem; background: #edf2ed; overflow-x: auto; line-height: 1.65; }
+pre code { font-size: inherit; }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+td, th { text-align: left; vertical-align: top; padding: .8rem .65rem; border-bottom: 1px solid var(--line); }
+th { font-family: system-ui, sans-serif; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; }
+.callout { border-left: 3px solid var(--accent); padding: .5rem 1.2rem; background: #f0f5ee; }
+.source, .small { font: .85rem/1.6 system-ui, sans-serif; color: var(--muted); }
+fieldset { border: 1px solid var(--line); padding: 1.2rem; margin: 1rem 0; }
+legend { padding: 0 .4rem; font-size: .95rem; font-weight: 600; }
+label { display: block; cursor: pointer; padding: .3rem; font-family: system-ui, sans-serif; font-size: .95rem; }
+input { accent-color: var(--accent); }
+button { border: 0; border-radius: 4px; background: var(--accent); color: white; padding: .7rem 1rem; font-size: .9rem; cursor: pointer; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid #b36c16; outline-offset: 4px; }
+.feedback { font: .9rem/1.5 system-ui, sans-serif; margin-bottom: 0; }
+footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+@media (max-width: 680px) { body { font-size: 17px; } main { margin: 0; padding: 28px 22px; } td, th { padding: .65rem .25rem; } }
+@media print { body { background: white; font-size: 11pt; } main { max-width: none; margin: 0; padding: 0; border: 0; } nav, button { display: none; } fieldset, tr, pre { break-inside: avoid; } a { color: inherit; } }

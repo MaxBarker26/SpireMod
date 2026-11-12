@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>02 · Trace a potion's effect</title><link rel="stylesheet" href="../assets/course.css"><script src="../assets/quiz.js" defer></script></head>
+<body><main>
+<nav aria-label="Course"><a href="0001-template-map.html">Previous lesson</a><a href="../reference/potion-command-map.html">Potion command reference</a><a href="../reference/template-map.html">Template map</a></nav>
+<p class="eyebrow">Lesson 02 · About 8 minutes · Read and trace</p>
+<h1>Trace a potion's effect.</h1>
+<p class="lede">Your next skill: find a comparable game object, identify its activation method, then follow the commands that do the work.</p>
+<p>Your target potion combines two existing behaviors: granting energy and drawing cards. Today we will trace those behaviors; creating your concrete potion comes next.</p>
+
+<h2 id="workflow">1. Start from existing content</h2>
+<p>Read <a href="https://github.com/Alchyr/ModTemplate-StS2/wiki/Modding-Basics#learning-how-to-make-things">Modding Basics — Learning how to make things</a>. Reading objective: identify the recommended route from a desired effect to comparable content and its commands.</p>
+<p>Then inspect these types in your installed <code>sts2.dll</code>:</p>
+<ul><li><code>MegaCrit.Sts2.Core.Models.Potions.EnergyPotion</code></li><li><code>MegaCrit.Sts2.Core.Models.Potions.SwiftPotion</code></li></ul>
+<p>Your IDE already opened decompiled BaseLib code. If it offers assembly-wide type search, use these full names. If it only searches workspace files, an assembly browser such as ILSpy can open <code>sts2.dll</code>. You can also complete this lesson using the focused excerpts below.</p>
+<p class="source">Primary source: your installed game assembly, inspected 11 November 2026. The <a href="../reference/potion-command-map.html#source">reference records its path and hash</a>. Decompiler guidance: <a href="https://github.com/Alchyr/ModTemplate-StS2/wiki/Decompiling">Decompiling</a>, especially “Oddities in decompiled code.” Generated syntax may differ from the original source.</p>
+
+<h2 id="activation">2. Find the activation method</h2>
+<p>Both potions override this game-defined method:</p>
+<pre><code>protected override async Task OnUse(
+    PlayerChoiceContext choiceContext, Creature? target)</code></pre>
+<p><code>OnUse</code> is the extension point for this potion's effect. <code>PotionModel.OnUseWrapper</code> calls it as part of a larger sequence that removes the consumed potion and runs surrounding potion hooks. Your subclass supplies the effect inside that sequence.</p>
+<p>Compare these excerpts from the two <code>OnUse</code> bodies. Visual effects have been omitted; the command calls and target checks are preserved.</p>
+<h3>EnergyPotion</h3>
+<pre><code>PotionModel.AssertValidForTargetedPotion(target);
+await PlayerCmd.GainEnergy(
+    DynamicVars.Energy.BaseValue, target.Player);</code></pre>
+<h3>SwiftPotion</h3>
+<pre><code>PotionModel.AssertValidForTargetedPotion(target);
+await CardPileCmd.Draw(
+    choiceContext, DynamicVars.Cards.BaseValue, target.Player);</code></pre>
+<p>Both declare <code>TargetType.AnyPlayer</code> and <code>PotionUsage.CombatOnly</code>. Here <code>target.Player</code> is the recipient; <code>Owner</code> is the potion's owner. They need not be the same player. The check rejects a null target; validity checks elsewhere govern which targets can be selected.</p>
+<p><code>choiceContext</code> is passed through to drawing so the operation can handle player choices. Keep that context when composing behavior. The awaited calls let each operation complete before execution proceeds.</p>
+<p class="small">For now, read <code>DynamicVars.Energy.BaseValue</code> as “the potion's configured energy amount.” These game potions define amounts with <code>EnergyVar(2)</code> and <code>CardsVar(3)</code>. We will cover dynamic variables and their relationship to text when defining your own potion.</p>
+
+<h2 id="commands">3. Follow one command deeper</h2>
+<p>Inspect <code>PlayerCmd.GainEnergy</code>. Before modifying the player's combat energy, it calls <code>Hook.ModifyEnergyGain</code> and <code>Hook.AfterModifyingEnergyGain</code>. Directly changing an energy property would bypass this command's processing.</p>
+<p>Likewise, <code>CardPileCmd.Draw</code> delegates to <code>DrawInternal</code>, which checks draw prevention, respects the hand limit, shuffles when necessary, and records and signals draws. Moving a card straight into the hand is not the same operation.</p>
+<p class="callout">Transferable pattern: content model → lifecycle override → awaited game commands. Use the same investigation process for a card, relic, or power; find the appropriate lifecycle method and operations for that content.</p>
+
+<h2 id="limits">4. Notice the boundary of “until full”</h2>
+<p>The installed game exposes <code>CardPile.MaxCardsInHand</code> (currently 10) and the hand's <code>Cards.Count</code>. Use the named game limit rather than assuming a literal number in your own behavior.</p>
+<p>A draw request can return fewer cards than requested, including zero. Draw prevention, exhausted supplies, a full hand, or combat ending can stop it. An unchecked <code>while (handNotFull)</code> loop could keep requesting a draw that never succeeds.</p>
+<p>Later we will choose a bounded implementation and define how it behaves if draw-triggered effects change the hand. Today, the key is to distinguish a requested draw count from guaranteed cards drawn.</p>
+
+<h2 id="practice">5. Recall and explain</h2>
+<fieldset data-quiz data-answer="use" data-explanation="OnUse supplies the individual potion's activation effect." data-hint="Look for the method both game potions override.">
+<legend>Which method supplies the potion's use effect?</legend>
+<label><input type="radio" name="hook" value="use"> OnUse</label>
+<label><input type="radio" name="hook" value="init"> Initialize</label>
+<label><input type="radio" name="hook" value="path"> PortraitPath</label>
+<button type="button">Check answer</button><p class="feedback" role="status" aria-live="polite"></p>
+</fieldset>
+<fieldset data-quiz data-answer="target" data-explanation="Both examples pass target.Player as the recipient; Owner identifies the potion's owner." data-hint="Read the argument passed in the recipient position of both command calls.">
+<legend>Which expression identifies the recipient in these examples?</legend>
+<label><input type="radio" name="recipient" value="owner"> Owner</label>
+<label><input type="radio" name="recipient" value="context"> choiceContext</label>
+<label><input type="radio" name="recipient" value="target"> target.Player</label>
+<button type="button">Check answer</button><p class="feedback" role="status" aria-live="polite"></p>
+</fieldset>
+<fieldset data-quiz data-answer="return" data-explanation="DrawInternal returns no cards when the draw-prevention check rejects drawing." data-hint="A draw request is subject to the game's draw rules.">
+<legend>What does the draw command do when drawing is prevented?</legend>
+<label><input type="radio" name="blocked" value="retry"> Keeps retrying forever</label>
+<label><input type="radio" name="blocked" value="return"> Returns without drawing</label>
+<label><input type="radio" name="blocked" value="ignore"> Ignores draw prevention</label>
+<button type="button">Check answer</button><p class="feedback" role="status" aria-live="polite"></p>
+</fieldset>
+<noscript><p>JavaScript is disabled. Answer these questions in chat for feedback.</p></noscript>
+<p>After reading, hide the examples and reply in chat:</p>
+<ol><li>Name the potion activation override and the two command methods you would investigate for your potion.</li><li>Explain one behavior you would bypass by directly changing energy or directly moving a card into the hand.</li><li>Your hand has 7 cards and its limit is 10. How many slots are empty? If drawing is prevented, why would retrying until the hand becomes full fail?</li></ol>
+<p>Ask the agent about any unclear step. We will use your explanation to decide what to practice before writing the potion.</p>
+<footer><a href="../reference/potion-command-map.html">Keep the compact command reference</a>. Next: choose the potion's identity and targeting, then build its concrete model using verified APIs.</footer>
+</main></body></html>
